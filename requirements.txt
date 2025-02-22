@@ -1,0 +1,9 @@
+streamlit
+numpy
+matplotlib
+pandas
+sqlite3
+os
+dataclasses
+typing
+
