@@ -134,7 +134,7 @@ def main():
             )
             
             # Limit intersections based on total needles
-          max_intersections = total_needles  # Maximum intersections equals total needles
+          max_intersections = total_needles
             intersections = st.number_input(
                 "Number of intersections",
                 min_value=1,
