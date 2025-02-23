@@ -32,7 +32,6 @@ class BuffonNeedleSimulation:
             """)
     
     def calculate_cumulative_pi(self, new_intersections: int, new_total_needles: int) -> float:
-        """Calculate cumulative pi based on all rounds including the new one"""
         total_intersections = sum(round.intersections for round in self.rounds) + new_intersections
         total_needles = sum(round.total_needles for round in self.rounds) + new_total_needles
         return (2 * total_needles) / total_intersections if total_intersections > 0 else float('inf')
@@ -62,13 +61,8 @@ class BuffonNeedleSimulation:
         
         self.rounds = self.load_rounds()
     
-    def get_first_last_rounds(self, n: int = 5):
-        if not self.rounds:
-            return [], []
-        
-        first_rounds = self.rounds[:n]
-        last_rounds = self.rounds[-n:] if len(self.rounds) > n else []
-        return first_rounds, last_rounds
+    def get_rounds_for_display(self):
+        return list(reversed(self.rounds))
     
     def clear_data(self):
         if os.path.exists(self.db_path):
@@ -76,125 +70,92 @@ class BuffonNeedleSimulation:
         self.init_database()
         self.rounds = []
 
-def plot_pi_approximation(rounds: List[RoundInfo], figsize=(10, 6)):
+def plot_pi_approximation(rounds: List[RoundInfo]):
+    fig, ax = plt.subplots(figsize=(10, 6), dpi=100)
+    
     if not rounds:
-        return plt.Figure()
+        ax.text(0.5, 0.5, 'No data yet', horizontalalignment='center', verticalalignment='center')
+        ax.set_axis_off()
+    else:
+        round_numbers = [r.round_number for r in rounds]
+        cumulative_pi_estimates = [r.cumulative_pi for r in rounds]
+        
+        # Plot the data and reference line
+        ax.plot(round_numbers, cumulative_pi_estimates, 'b-', label='Pi Approximation')
+        ax.axhline(y=np.pi, color='r', linestyle='--', label="Actual Pi")
+        
+        # Calculate y-axis limits based on data range
+        min_val = min(cumulative_pi_estimates)
+        max_val = max(cumulative_pi_estimates)
+        data_range = max_val - min_val
+        
+        # Add a small padding to the data range
+        padding = data_range * 0.1 if data_range > 0 else 0.1
+        y_min = min_val - padding
+        y_max = max_val + padding
+        
+        # Set y-limits based on data, without forcing π to be included
+        ax.set_ylim([y_min, y_max])
+        
+        # Only add π annotation if π falls within the y-axis range, and position it on the y-axis
+        if y_min <= np.pi <= y_max:
+            # Position the text at the left edge of the y-axis (outside the plot area, aligned with y-ticks)
+            ax.text(
+                x=-0.02,  # Slightly left of the y-axis (negative to place outside plot area)
+                y=np.pi,  # Position exactly at π's value
+                s=f'π ≈ {np.pi:.3f}',
+                color='r',
+                bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'),
+                verticalalignment='center',  # Center vertically on the π line
+                horizontalalignment='right',  # Align text to the right, next to the y-axis
+                transform=ax.get_yaxis_transform()  # Use y-axis transform for proper alignment with y-ticks
+            )
+        
+        ax.set_xlabel('Round Number')
+        ax.set_ylabel('Pi Approximation')
+        ax.set_title("Buffon's Needle Pi Approximation")
+        ax.legend()
+        ax.grid(True)
     
-    fig, ax = plt.subplots(figsize=figsize)
-    
-    round_numbers = [r.round_number for r in rounds]
-    cumulative_pi_estimates = [r.cumulative_pi for r in rounds]
-    
-    # Plot the cumulative approximations
-    ax.plot(round_numbers, cumulative_pi_estimates, 'b-', label='Pi Approximation')
-    ax.axhline(y=np.pi, color='r', linestyle='--', label='Actual Pi')
-    
-    ax.set_xlabel('Round Number')
-    ax.set_ylabel('Pi Approximation')
-    ax.set_title("Buffon's Needle Pi Approximation Over Rounds")
-    ax.legend()
-    ax.grid(True)
-    
-    # Let the y-axis adjust dynamically based on the data
-    min_val = min(cumulative_pi_estimates)
-    max_val = max(cumulative_pi_estimates)
-    padding = (max_val - min_val) * 0.1  # Add 10% padding
-    ax.set_ylim([min_val - padding, max_val + padding])
-    
+    plt.tight_layout(pad=1.0)
     return fig
 
 def main():
     st.set_page_config(layout="wide")
     st.title("Buffon's Needle Pi Estimation")
     
-    # Initialize simulation with SQLite database
     if 'simulation' not in st.session_state:
         st.session_state.simulation = BuffonNeedleSimulation()
     
-    # Create two columns
-    col1, col2 = st.columns([0.7, 0.3])
+    col_left, col_right = st.columns([0.6, 0.4])
     
-    with col1:
-        # Display the main plot
-        fig = plot_pi_approximation(st.session_state.simulation.rounds)
-        st.pyplot(fig)
+    with col_left:
+        st.subheader("Pi Approximation Graph")
+        with st.container():
+            fig = plot_pi_approximation(st.session_state.simulation.rounds)
+            st.pyplot(fig, use_container_width=True)
         
-        # Add a clear data button
-        clear_button = st.button("Clear All Data")
-        
-        # Initialize the dialog state if not exists
-        if "show_dialog" not in st.session_state:
-            st.session_state.show_dialog = False
+        st.subheader("Data Options")
+        if 'show_clear_dialog' not in st.session_state:
+            st.session_state.show_clear_dialog = False
             
-        if clear_button:
-            st.session_state.show_dialog = True
+        if st.button("Clear All Data", key="clear_btn"):
+            st.session_state.show_clear_dialog = True
             
-        # Create a custom dialog
-        if st.session_state.show_dialog:
-            with st.container():
-                st.markdown(
-                    """
-                    <style>
-                    .dialog-container {
-                        position: fixed;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        background-color: white;
-                        padding: 20px;
-                        border-radius: 10px;
-                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                        z-index: 1000;
-                        width: 300px;
-                        text-align: center;
-                    }
-                    .dialog-backdrop {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background-color: rgba(0, 0, 0, 0.5);
-                        z-index: 999;
-                    }
-                    .dialog-buttons {
-                        display: flex;
-                        justify-content: center;
-                        gap: 10px;
-                        margin-top: 20px;
-                    }
-                    </style>
-                    """,
-                    unsafe_allow_html=True
-                )
-                
-                with st.container():
-                    st.markdown('<div class="dialog-backdrop"></div>', unsafe_allow_html=True)
-                    st.markdown(
-                        """
-                        <div class="dialog-container">
-                            <h3>Confirm Action</h3>
-                            <p>Are you sure you want to clear all data?</p>
-                            <div class="dialog-buttons">
-                            </div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                    
-                    # Add buttons in two columns
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        if st.button("Yes, Clear", key="confirm_clear", type="primary"):
-                            st.session_state.simulation.clear_data()
-                            st.session_state.show_dialog = False
-                            st.rerun()
-                    with col2:
-                        if st.button("No, Cancel", key="cancel_clear"):
-                            st.session_state.show_dialog = False
-                            st.rerun()
-    
-    with col2:
+        if st.session_state.show_clear_dialog:
+            st.warning("Are you sure you want to clear all data?")
+            col_confirm, col_cancel = st.columns(2)
+            with col_confirm:
+                if st.button("Yes, Clear Data", type="primary", key="confirm_clear"):
+                    st.session_state.simulation.clear_data()
+                    st.session_state.show_clear_dialog = False
+                    st.rerun()
+            with col_cancel:
+                if st.button("Cancel", key="cancel_clear"):
+                    st.session_state.show_clear_dialog = False
+                    st.rerun()
+
+    with col_right:
         st.subheader("Add New Round")
         with st.form("new_round_form"):
             total_needles = st.number_input(
@@ -203,7 +164,6 @@ def main():
                 value=20
             )
             
-            # Limit intersections based on total needles
             max_intersections = total_needles
             intersections = st.number_input(
                 "Number of intersections",
@@ -214,31 +174,30 @@ def main():
             
             submitted = st.form_submit_button("Next Round")
             
-            # Add validation message after form submission
-            if submitted:
-                if intersections > 0:
-                    st.session_state.simulation.add_round(intersections, total_needles)
-                    st.rerun()
-                else:
-                    st.error("Number of intersections must be greater than 0!")
+            if submitted and intersections > 0:
+                st.session_state.simulation.add_round(intersections, total_needles)
+                st.rerun()
         
-        # Display first and last rounds
-        st.subheader("Last Rounds")
-        first_rounds, last_rounds = st.session_state.simulation.get_first_last_rounds()
+        st.subheader("Rounds History")
+        all_rounds = st.session_state.simulation.get_rounds_for_display()
         
-        
-        if last_rounds:
-            st.write("Last 5 Rounds:")
-            df_last = pd.DataFrame([
+        if all_rounds:
+            df = pd.DataFrame([
                 {
                     "Round": r.round_number,
-                    "Intersections": r.intersections,
                     "Total Sticks": r.total_needles,
-                    "π Approximation": f"{r.cumulative_pi:.6f}"
+                    "Intersected Sticks": r.intersections,
+                    "π Approx": f"{r.cumulative_pi:.6f}"
                 }
-                for r in last_rounds
+                for r in all_rounds
             ])
-            st.dataframe(df_last, height=200)
+            
+            st.dataframe(
+                df,
+                height=300,
+                use_container_width=True,
+                hide_index=True
+            )
 
 if __name__ == "__main__":
     main()
