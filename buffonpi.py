@@ -139,6 +139,7 @@ def main():
                 "Number of intersections",
                 min_value=1,
                 max_value=max_intersections,
+                value=(total_needles)/3
             )
             
             submitted = st.form_submit_button("Next Round")
