@@ -120,9 +120,79 @@ def main():
         st.pyplot(fig)
         
         # Add a clear data button
-        if st.button("Clear All Data"):
-            st.session_state.simulation.clear_data()
-            st.rerun()
+        clear_button = st.button("Clear All Data")
+        
+        # Initialize the dialog state if not exists
+        if "show_dialog" not in st.session_state:
+            st.session_state.show_dialog = False
+            
+        if clear_button:
+            st.session_state.show_dialog = True
+            
+        # Create a custom dialog
+        if st.session_state.show_dialog:
+            with st.container():
+                st.markdown(
+                    """
+                    <style>
+                    .dialog-container {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background-color: white;
+                        padding: 20px;
+                        border-radius: 10px;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                        z-index: 1000;
+                        width: 300px;
+                        text-align: center;
+                    }
+                    .dialog-backdrop {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background-color: rgba(0, 0, 0, 0.5);
+                        z-index: 999;
+                    }
+                    .dialog-buttons {
+                        display: flex;
+                        justify-content: center;
+                        gap: 10px;
+                        margin-top: 20px;
+                    }
+                    </style>
+                    """,
+                    unsafe_allow_html=True
+                )
+                
+                with st.container():
+                    st.markdown('<div class="dialog-backdrop"></div>', unsafe_allow_html=True)
+                    st.markdown(
+                        """
+                        <div class="dialog-container">
+                            <h3>Confirm Action</h3>
+                            <p>Are you sure you want to clear all data?</p>
+                            <div class="dialog-buttons">
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                    
+                    # Add buttons in two columns
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button("Yes, Clear", key="confirm_clear", type="primary"):
+                            st.session_state.simulation.clear_data()
+                            st.session_state.show_dialog = False
+                            st.rerun()
+                    with col2:
+                        if st.button("No, Cancel", key="cancel_clear"):
+                            st.session_state.show_dialog = False
+                            st.rerun()
     
     with col2:
         st.subheader("Add New Round")
@@ -153,21 +223,9 @@ def main():
                     st.error("Number of intersections must be greater than 0!")
         
         # Display first and last rounds
-        st.subheader("First and Last Rounds")
+        st.subheader("Last Rounds")
         first_rounds, last_rounds = st.session_state.simulation.get_first_last_rounds()
         
-        st.write("First 5 Rounds:")
-        if first_rounds:
-            df_first = pd.DataFrame([
-                {
-                    "Round": r.round_number,
-                    "Intersections": r.intersections,
-                    "Total Sticks": r.total_needles,
-                    "π Approximation": f"{r.cumulative_pi:.6f}"
-                }
-                for r in first_rounds
-            ])
-            st.dataframe(df_first)
         
         if last_rounds:
             st.write("Last 5 Rounds:")
@@ -180,7 +238,7 @@ def main():
                 }
                 for r in last_rounds
             ])
-            st.dataframe(df_last)
+            st.dataframe(df_last, height=200)
 
 if __name__ == "__main__":
     main()
