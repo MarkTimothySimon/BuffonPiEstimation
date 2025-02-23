@@ -139,7 +139,6 @@ def main():
                 "Number of intersections",
                 min_value=1,
                 max_value=max_intersections,
-                value=1  # Simple start at 1
             )
             
             submitted = st.form_submit_button("Next Round")
