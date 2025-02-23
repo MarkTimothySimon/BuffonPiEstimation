@@ -17,9 +17,6 @@ class RoundInfo:
 class BuffonNeedleSimulation:
     def __init__(self, db_path: str = "buffon_needle.db"):
         self.db_path = db_path
-        # Delete existing database if it exists
-        if os.path.exists(self.db_path):
-            os.remove(self.db_path)
         self.init_database()
         self.rounds = self.load_rounds()
         
@@ -99,7 +96,7 @@ def plot_pi_approximation(rounds: List[RoundInfo], figsize=(10, 6)):
     ax.grid(True)
     
     # Let the y-axis adjust dynamically based on the data
-    min_val = min(cumulative_pi_estimates or (np.pi - 1))
+    min_val = min(cumulative_pi_estimates)
     max_val = max(cumulative_pi_estimates)
     padding = (max_val - min_val) * 0.1  # Add 10% padding
     ax.set_ylim([min_val - padding, max_val + padding])
@@ -137,7 +134,7 @@ def main():
             )
             
             # Limit intersections based on total needles
-            max_intersections = min(50, total_needles)
+            max_intersections = total_needles
             intersections = st.number_input(
                 "Number of intersections",
                 min_value=0,
