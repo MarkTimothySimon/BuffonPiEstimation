@@ -134,12 +134,12 @@ def main():
             )
             
             # Limit intersections based on total needles
-            max_intersections = total_needles
+          max_intersections = total_needles  # Maximum intersections equals total needles
             intersections = st.number_input(
                 "Number of intersections",
-                min_value=1,  # Changed from 0 to 1
+                min_value=1,
                 max_value=max_intersections,
-                value=1  # Changed from 0 to 1
+                value=1  # Simple start at 1
             )
             
             submitted = st.form_submit_button("Next Round")
