@@ -86,11 +86,11 @@ def plot_pi_approximation(rounds: List[RoundInfo], figsize=(10, 6)):
     cumulative_pi_estimates = [r.cumulative_pi for r in rounds]
     
     # Plot the cumulative approximations
-    ax.plot(round_numbers, cumulative_pi_estimates, 'b-', label='Cumulative Pi Approximation')
+    ax.plot(round_numbers, cumulative_pi_estimates, 'b-', label='Pi Approximation')
     ax.axhline(y=np.pi, color='r', linestyle='--', label='Actual Pi')
     
     ax.set_xlabel('Round Number')
-    ax.set_ylabel('Cumulative Pi Approximation')
+    ax.set_ylabel('Pi Approximation')
     ax.set_title("Buffon's Needle Pi Approximation Over Rounds")
     ax.legend()
     ax.grid(True)
@@ -134,7 +134,7 @@ def main():
             )
             
             # Limit intersections based on total needles
-            max_intersections = min(20, total_needles)
+            max_intersections = total_needles
             intersections = st.number_input(
                 "Number of intersections",
                 min_value=1,  # Changed from 0 to 1
@@ -142,7 +142,7 @@ def main():
                 value=1  # Changed from 0 to 1
             )
             
-            submitted = st.form_submit_button("Add Round")
+            submitted = st.form_submit_button("Next Round")
             
             # Add validation message after form submission
             if submitted:
@@ -163,7 +163,7 @@ def main():
                     "Round": r.round_number,
                     "Intersections": r.intersections,
                     "Total Sticks": r.total_needles,
-                    "Cumulative π": f"{r.cumulative_pi:.6f}"
+                    "π Approximation": f"{r.cumulative_pi:.6f}"
                 }
                 for r in first_rounds
             ])
@@ -176,7 +176,7 @@ def main():
                     "Round": r.round_number,
                     "Intersections": r.intersections,
                     "Total Sticks": r.total_needles,
-                    "Cumulative π": f"{r.cumulative_pi:.6f}"
+                    "π Approximation": f"{r.cumulative_pi:.6f}"
                 }
                 for r in last_rounds
             ])
