@@ -86,11 +86,11 @@ def plot_pi_approximation(rounds: List[RoundInfo], figsize=(10, 6)):
     cumulative_pi_estimates = [r.cumulative_pi for r in rounds]
     
     # Plot the cumulative approximations
-    ax.plot(round_numbers, cumulative_pi_estimates, 'b-', label='Pi Approximation')
+    ax.plot(round_numbers, cumulative_pi_estimates, 'b-', label='Cumulative Pi Approximation')
     ax.axhline(y=np.pi, color='r', linestyle='--', label='Actual Pi')
     
     ax.set_xlabel('Round Number')
-    ax.set_ylabel('Pi Approximation')
+    ax.set_ylabel('Cumulative Pi Approximation')
     ax.set_title("Buffon's Needle Pi Approximation Over Rounds")
     ax.legend()
     ax.grid(True)
@@ -134,18 +134,23 @@ def main():
             )
             
             # Limit intersections based on total needles
-            max_intersections = total_needles
+            max_intersections = min(20, total_needles)
             intersections = st.number_input(
                 "Number of intersections",
-                min_value=0,
+                min_value=1,  # Changed from 0 to 1
                 max_value=max_intersections,
-                value=0
+                value=1  # Changed from 0 to 1
             )
             
-            submitted = st.form_submit_button("Next Round")
+            submitted = st.form_submit_button("Add Round")
+            
+            # Add validation message after form submission
             if submitted:
-                st.session_state.simulation.add_round(intersections, total_needles)
-                st.rerun()
+                if intersections > 0:
+                    st.session_state.simulation.add_round(intersections, total_needles)
+                    st.rerun()
+                else:
+                    st.error("Number of intersections must be greater than 0!")
         
         # Display first and last rounds
         st.subheader("First and Last Rounds")
