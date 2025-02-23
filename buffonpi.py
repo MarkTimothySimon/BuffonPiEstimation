@@ -130,7 +130,6 @@ def main():
             total_needles = st.number_input(
                 "Total number of sticks",
                 min_value=1,
-                value=20
             )
             
             # Limit intersections based on total needles
