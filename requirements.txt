@@ -1,9 +1,5 @@
-streamlit
-numpy
-matplotlib
-pandas
-sqlite3
-os
-dataclasses
-typing
-
+streamlit>=1.31.0
+numpy>=1.24.0
+matplotlib>=3.7.0
+pandas>=2.0.0
+typing>=3.7.4
