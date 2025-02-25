@@ -88,8 +88,17 @@ def plot_pi_approximation(rounds: List[RoundInfo], figsize=(10, 6)):
     
     ax.plot(round_numbers, cumulative_pi_estimates, 'b-', label='Pi Approximation')
     # Add pi reference line with annotation
-    ax.axhline(y=np.pi, color='r', linestyle='--', label=f'π ≈ {np.pi:.3f}')
-    
+    min_val = min(cumulative_pi_estimates)
+    max_val = max(cumulative_pi_estimates)
+    data_range = max_val - min_val
+
+        # Add a small padding to the data range
+    padding = data_range * 0.1 if data_range > 0 else 0.1
+    y_min = min_val - padding
+    y_max = max_val + padding
+
+        # Set y-limits based on data, without forcing π to be included
+    ax.set_ylim([y_min, y_max])
     # Add text annotation for pi value
     if y_min <= np.pi <= y_max:
             # Position the text at the left edge of the y-axis (outside the plot area, aligned with y-ticks)
