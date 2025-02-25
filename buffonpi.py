@@ -91,13 +91,18 @@ def plot_pi_approximation(rounds: List[RoundInfo], figsize=(10, 6)):
     ax.axhline(y=np.pi, color='r', linestyle='--', label=f'π ≈ {np.pi:.3f}')
     
     # Add text annotation for pi value
-    ax.text(
-        x=len(round_numbers) * 0.02,  # Place near the left
-        y=np.pi + 0.02,  # Slightly above the line
-        s=f'π ≈ {np.pi:.3f}',
-        color='r',
-        bbox=dict(facecolor='white', alpha=0.8, edgecolor='none')
-    )
+    if y_min <= np.pi <= y_max:
+            # Position the text at the left edge of the y-axis (outside the plot area, aligned with y-ticks)
+            ax.text(
+                x=-0.02,  # Slightly left of the y-axis (negative to place outside plot area)
+                y=np.pi,  # Position exactly at π's value
+                s=f'π ≈ {np.pi:.3f}',
+                color='r',
+                bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'),
+                verticalalignment='center',  # Center vertically on the π line
+                horizontalalignment='right',  # Align text to the right, next to the y-axis
+                transform=ax.get_yaxis_transform()  # Use y-axis transform for proper alignment with y-ticks
+            )
     
     ax.set_xlabel('Round Number')
     ax.set_ylabel('Pi Approximation')
