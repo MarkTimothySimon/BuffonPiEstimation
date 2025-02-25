@@ -39,7 +39,7 @@ class BuffonNeedleSimulation:
     def calculate_cumulative_pi(self, new_intersections: int, new_total_needles: int) -> float:
         total_intersections = sum(round.intersections for round in self.rounds) + new_intersections
         total_needles = sum(round.total_needles for round in self.rounds) + new_total_needles
-        return (2 * total_needles) / total_intersections if total_intersections > 0 else float('inf')
+        return (total_needles) / total_intersections if total_intersections > 0 else float('inf')
     
     def load_rounds(self) -> List[RoundInfo]:
         with sqlite3.connect(self.db_path) as conn:
@@ -182,7 +182,7 @@ def main():
                     "Total Sticks": r.total_needles,
                     "Round π": f"{r.round_pi:.6f}",
                     "Cumulative π": f"{r.cumulative_pi:.6f}",
-                    "Difference from π": f"{abs(r.round_pi - np.pi):.6f}"
+                    "Difference from π": f"{abs(r.cumulative_pi - np.pi):.6f}"
                 }
                 for r in all_rounds
             ])
