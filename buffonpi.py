@@ -87,6 +87,7 @@ def plot_pi_approximation(rounds: List[RoundInfo], figsize=(10, 6)):
     individual_pi_estimates = [(r.total_needles / r.intersections) if r.intersections > 0 else np.nan for r in rounds]
     
     ax.plot(round_numbers, cumulative_pi_estimates, 'b-', label='Pi Approximation')
+    ax.axhline(y=np.pi, color='r', linestyle='--', label=f'π ≈ {np.pi:.3f}')
     # Add pi reference line with annotation
     min_val = min(cumulative_pi_estimates)
     max_val = max(cumulative_pi_estimates)
